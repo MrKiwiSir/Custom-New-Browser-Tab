@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Custom New Tab Dashboard",
+  "version": "2.3.0",
+  "description": "Editable shortcut grid and scratchpad New Tab page with private GitHub backup and instant address bar focus.",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

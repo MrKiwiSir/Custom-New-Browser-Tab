@@ -1,0 +1,728 @@
+
+:root {
+  --bg: #ffffff;
+  --surface: #f8f9fa;
+  --surface-hover: #f1f3f5;
+  --border: #e2e8f0;
+  --text: #1f2937;
+  --text-muted: #525866;
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.16);
+
+  --page-cols: 2;
+  --max-width: 1280px;
+  --icon-size: 88px;
+  --icon-radius: 18px;
+  --grid-gap: 18px;
+}
+
+body.theme-dark {
+  --bg: #111318;
+  --surface: #1b1f27;
+  --surface-hover: #252b36;
+  --border: #2e3440;
+  --text: #f3f4f6;
+  --text-muted: #9ca3af;
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#app {
+  width: 100%;
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 28px 28px 80px;
+}
+
+body.is-editing #app {
+  padding-top: 76px;
+}
+
+/* Dashboard grid */
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(var(--page-cols), minmax(0, 1fr));
+  gap: 28px 36px;
+  align-items: start;
+}
+
+@media (max-width: 860px) {
+  .dashboard {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Widgets */
+.widget {
+  min-width: 0;
+  border-radius: 14px;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+body.is-editing .widget {
+  border: 1.5px dashed var(--border);
+  padding: 14px;
+  background: var(--surface);
+}
+
+.widget-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.widget-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.01em;
+}
+
+.widget-controls {
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+
+body.is-editing .widget-controls {
+  display: flex;
+}
+
+.mini-btn {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.mini-btn:hover {
+  background: var(--surface-hover);
+}
+
+/* Shortcut grid inside widget */
+.shortcut-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--widget-cols, 5), minmax(0, 1fr));
+  gap: var(--grid-gap);
+  grid-auto-flow: dense;
+}
+
+.shortcut-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none;
+  color: var(--text);
+  min-width: 0;
+  user-select: none;
+}
+
+.shortcut-tile.dragging {
+  opacity: 0.4;
+}
+
+.shortcut-tile.drag-over .tile-icon-box {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tile-icon-box {
+  width: 100%;
+  max-width: var(--tile-size, var(--icon-size));
+  height: var(--tile-size, var(--icon-size));
+  border-radius: var(--icon-radius);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  position: relative;
+}
+
+.shortcut-tile[data-col-span="2"] .tile-icon-box,
+.shortcut-tile[data-col-span="3"] .tile-icon-box {
+  max-width: 100%;
+}
+
+.shortcut-tile[data-row-span="2"] .tile-icon-box {
+  height: calc(var(--tile-size, var(--icon-size)) * 2 + var(--grid-gap) + 22px);
+}
+
+.shortcut-tile:hover .tile-icon-box {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.tile-icon-box img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+/* The picture fills the tile edge to edge; the tile's rounded corners clip
+   it. Most site icons are already a finished square, so padding them made
+   an icon inside an icon. */
+.tile-icon-box img.fit-contain {
+  object-fit: contain;
+  padding: 0;
+}
+
+.tile-icon-box img.fit-padded {
+  object-fit: contain;
+  padding: 14%;
+}
+
+.tile-icon-box img.fit-cover {
+  object-fit: cover;
+  padding: 0;
+}
+
+.tile-monogram {
+  font-weight: 800;
+  font-size: calc(var(--tile-size, var(--icon-size)) * 0.44);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  pointer-events: none;
+}
+
+.tile-label {
+  margin-top: 7px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  text-align: center;
+  width: 100%;
+  max-width: 110px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shortcut-tile[data-col-span="2"] .tile-label,
+.shortcut-tile[data-col-span="3"] .tile-label {
+  max-width: 100%;
+}
+
+body.hide-labels .tile-label {
+  display: none;
+}
+
+/* Edit overlay on shortcut tiles */
+.tile-edit-actions {
+  display: none;
+  position: absolute;
+  top: -6px;
+  right: 2px;
+  gap: 4px;
+  z-index: 3;
+}
+
+body.is-editing .tile-edit-actions {
+  display: flex;
+}
+
+body.is-editing .shortcut-tile {
+  cursor: grab;
+}
+
+.tile-action-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.tile-action-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.tile-action-btn.del:hover {
+  background: var(--danger);
+  border-color: var(--danger);
+}
+
+/* Add shortcut placeholder tile in edit mode */
+.add-tile-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.add-tile-box {
+  width: 100%;
+  max-width: var(--tile-size, var(--icon-size));
+  height: var(--tile-size, var(--icon-size));
+  border-radius: var(--icon-radius);
+  border: 2px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 300;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.add-tile-btn:hover .add-tile-box {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Note / Scratchpad widget */
+.note-card {
+  border-radius: 12px;
+  padding: 16px 18px;
+  color: #1f2937;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+}
+
+.note-card .widget-header {
+  margin-bottom: 10px;
+}
+
+.note-card .widget-title {
+  color: #1f2937;
+}
+
+.note-display {
+  width: 100%;
+  min-height: 110px;
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+  cursor: text;
+  color: #2c2c2c;
+}
+
+.note-display.is-empty {
+  color: rgba(31, 41, 55, 0.55);
+  font-style: italic;
+}
+
+.note-display a {
+  color: #0f62fe;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.note-textarea {
+  width: 100%;
+  min-height: 110px;
+  border: 1.5px solid rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.45);
+  padding: 8px 10px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #1f2937;
+  resize: vertical;
+  outline: none;
+}
+
+/* Edit Mode Top Toolbar */
+.edit-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 54px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 40;
+  box-shadow: var(--shadow);
+}
+
+.edit-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.edit-pill {
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.edit-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.edit-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Floating bottom-right controls */
+.floating-bar {
+  position: fixed;
+  right: 20px;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 30;
+}
+
+.sync-badge {
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 5px 10px;
+  border-radius: 999px;
+  display: none;
+}
+
+.sync-badge.visible {
+  display: inline-block;
+}
+
+.fab-btn {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  opacity: 0.78;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.fab-btn:hover {
+  opacity: 1;
+  background: var(--surface);
+}
+
+/* Buttons */
+.btn {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn-secondary:hover {
+  background: var(--surface-hover);
+}
+
+.btn-dark {
+  background: #1f2937;
+  color: #fff;
+}
+.btn-dark:hover {
+  background: #111827;
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+}
+.btn-danger:hover {
+  background: var(--danger-hover);
+}
+
+.btn-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.icon-btn:hover {
+  color: var(--text);
+}
+
+/* Modals & Drawer */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg);
+  color: var(--text);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-header, .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.drawer-header h2, .modal-header h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.drawer-body, .modal-body {
+  padding: 18px 20px;
+  overflow-y: auto;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.settings-section {
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.settings-section h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.form-row label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.form-row input[type="text"],
+.form-row input[type="url"],
+.form-row input[type="password"],
+.form-row input[type="number"],
+.form-row select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13.5px;
+}
+
+.form-row input[type="color"] {
+  width: 100%;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  padding: 2px;
+  cursor: pointer;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.checkbox-row label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 400;
+}
+
+.help-text {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin: 0 0 12px;
+  line-height: 1.45;
+}
+
+.field-hint {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  line-height: 1.35;
+}
+
+.status-box {
+  margin-top: 10px;
+  font-size: 12.5px;
+  line-height: 1.4;
+  min-height: 18px;
+}
+
+.status-box.ok {
+  color: #15803d;
+}
+
+body.theme-dark .status-box.ok {
+  color: #4ade80;
+}
+
+.status-box.err {
+  color: var(--danger);
+}
+
+.upload-preview {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.upload-preview img {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: contain;
+  border: 1px solid var(--border);
+}
+
+/* Update available pill */
+.fab-btn.fab-update {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  opacity: 1;
+}
+
+.fab-btn.fab-update:hover {
+  background: var(--accent-hover);
+}
+
+/* A small icon is shown near its real size instead of being stretched. */
+.tile-icon-box img.icon-native {
+  flex: none;
+  padding: 0;
+  max-width: 70%;
+  max-height: 70%;
+  object-fit: contain;
+}

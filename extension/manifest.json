@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Custom New Tab (auto-updating)",
+  "version": "1.0.0",
+  "description": "Shows your Custom New Tab Dashboard from GitHub on every new tab, keeping the cursor in the address bar. Install once; the dashboard updates itself from GitHub.",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArgDaAvhLGUiLZ4MC+jAcErHXxSANldUM1o6mz2hZeqDZAaaYL0l15iV27TXKGpIwCOqxzFlUwSf4pzG3u9ZYLYR0joXjotHIYNqgDw7PbmRpgMcADFDXRsaIIHaxfxKWlA/4VVx0TsmgZSwt21DEJ2O23aDKDGCwrnKX9SRSLghRfc7aqjQyQbWutQxitGOGGNc00dmnJFQICu0EywNZzPrVVLvQAZ6ne5XrA3xEaf6wFoFhqv6P0+OKxnKQAQJ2LTpBZPcAAJKTk3h2jy5aJkQnncDJ3u5hCfzLGM0MmnTqGLyZ7jsZ+eU8tiyH7/IPwbaOlLCXSOb+44a5jI8bgwIDAQAB",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "icons": {
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

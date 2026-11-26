@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Tab</title>
+  <!-- Links must replace the whole tab, also when shown inside the New Tab wrapper. -->
+  <base target="_top">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <main id="dashboard" class="dashboard" aria-label="Shortcuts and notes"></main>
+  </div>
+
+  <!-- Floating subtle bottom-right controls -->
+  <div class="floating-bar" id="floatingBar">
+    <span id="syncBadge" class="sync-badge" title="Sync status"></span>
+    <button id="updateAvailableBtn" class="fab-btn fab-update hidden" type="button"></button>
+    <button id="toggleEditBtn" class="fab-btn" type="button" title="Toggle Edit Mode">Edit</button>
+    <button id="openSettingsBtn" class="fab-btn" type="button" title="Layout &amp; GitHub Sync Settings">Settings</button>
+  </div>
+
+  <!-- Edit Mode Top Toolbar (hidden unless Edit Mode is active) -->
+  <div id="editToolbar" class="edit-toolbar hidden">
+    <div class="edit-toolbar-left">
+      <span class="edit-pill">Edit Mode</span>
+      <span class="edit-hint">Drag icons to reorder or move between widgets.</span>
+    </div>
+    <div class="edit-toolbar-actions">
+      <button id="addShortcutWidgetBtn" class="btn btn-primary" type="button">+ Shortcut Widget</button>
+      <button id="addNoteWidgetBtn" class="btn btn-secondary" type="button">+ Note Widget</button>
+      <button id="doneEditBtn" class="btn btn-dark" type="button">Done</button>
+    </div>
+  </div>
+
+  <!-- Settings & GitHub Backup Drawer -->
+  <div id="settingsBackdrop" class="modal-backdrop hidden">
+    <aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="drawer-header">
+        <h2 id="settingsTitle">Dashboard Settings</h2>
+        <button id="closeSettingsBtn" class="icon-btn" type="button" aria-label="Close">&times;</button>
+      </div>
+      <div class="drawer-body">
+        <section class="settings-section">
+          <h3>Layout &amp; Dimensions</h3>
+          <div class="form-row">
+            <label for="settingPageCols">Page Columns (Widgets side-by-side)</label>
+            <select id="settingPageCols">
+              <option value="1">1 Column</option>
+              <option value="2">2 Columns</option>
+              <option value="3">3 Columns</option>
+              <option value="4">4 Columns</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="settingMaxWidth">Max Page Width: <span id="valMaxWidth"></span></label>
+            <input id="settingMaxWidth" type="range" min="900" max="2000" step="50">
+          </div>
+          <div class="form-row">
+            <label for="settingIconSize">Default Icon Size: <span id="valIconSize"></span></label>
+            <input id="settingIconSize" type="range" min="48" max="140" step="4">
+          </div>
+          <div class="form-row">
+            <label for="settingIconRadius">Icon Corner Radius: <span id="valIconRadius"></span></label>
+            <input id="settingIconRadius" type="range" min="0" max="50" step="2">
+          </div>
+          <div class="form-row">
+            <label for="settingGridGap">Icon Spacing: <span id="valGridGap"></span></label>
+            <input id="settingGridGap" type="range" min="8" max="36" step="2">
+          </div>
+          <div class="form-row">
+            <label for="settingTheme">Theme</label>
+            <select id="settingTheme">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="system">Match System</option>
+            </select>
+          </div>
+          <div class="form-row checkbox-row">
+            <label>
+              <input id="settingShowLabels" type="checkbox">
+              Show shortcut labels
+            </label>
+          </div>
+          <div class="form-row checkbox-row">
+            <label>
+              <input id="settingOpenNewTab" type="checkbox">
+              Open shortcuts in a new tab
+            </label>
+          </div>
+        </section>
+
+        <section class="settings-section">
+          <h3>GitHub Backup &amp; Sync</h3>
+          <p class="help-text">
+            Back up your shortcuts and notes to a <strong>Private</strong> GitHub repository of your own (not the public one the program lives in). Everything is organized automatically for you—your token stays on this computer and is never uploaded.
+          </p>
+          <div class="form-row">
+            <label for="ghToken">GitHub Token</label>
+            <input id="ghToken" type="password" placeholder="Paste your GitHub token here" autocomplete="off">
+          </div>
+          <div class="form-row">
+            <label for="ghRepo">GitHub Repository Link</label>
+            <input id="ghRepo" type="text" placeholder="https://github.com/yourname/your-repo" autocomplete="off">
+          </div>
+          <div class="form-row">
+            <label for="ghSyncMode">Browser Sync Style</label>
+            <select id="ghSyncMode">
+              <option value="separate">Keep this browser separate (Recommended)</option>
+              <option value="shared">Share the same links across all browsers</option>
+            </select>
+          </div>
+          <div id="ghProfileNameGroup" class="form-row">
+            <label for="ghProfileName">Name for this browser</label>
+            <input id="ghProfileName" type="text" placeholder="e.g. Edge, Chrome, Work" autocomplete="off">
+            <span class="field-hint">Auto-filled with your current browser. Change this only if you want two separate setups in the same browser.</span>
+          </div>
+          <div class="form-row checkbox-row">
+            <label>
+              <input id="ghAutoPush" type="checkbox">
+              Automatically save changes to GitHub
+            </label>
+          </div>
+          <div class="form-row checkbox-row">
+            <label>
+              <input id="ghAutoPull" type="checkbox">
+              Automatically check GitHub for updates when opening a new tab
+            </label>
+          </div>
+          <div class="btn-group">
+            <button id="ghSaveConfigBtn" class="btn btn-secondary" type="button">Save Settings</button>
+            <button id="ghPushBtn" class="btn btn-primary" type="button">Save to GitHub Now</button>
+            <button id="ghPullBtn" class="btn btn-secondary" type="button">Load from GitHub</button>
+          </div>
+          <div id="ghStatus" class="status-box" aria-live="polite"></div>
+        </section>
+
+        <section class="settings-section">
+          <h3>App Updates</h3>
+          <p class="help-text">
+            Installed version: <strong id="installedVersion">...</strong>. Updating only replaces the program itself. Your shortcuts and notes are not touched.
+          </p>
+          <div class="btn-group">
+            <button id="checkUpdateBtn" class="btn btn-secondary" type="button">Check for Updates</button>
+            <button id="updateNowBtn" class="btn btn-primary hidden" type="button">Update Now</button>
+          </div>
+          <div id="updateStatus" class="status-box" aria-live="polite"></div>
+        </section>
+
+        <section class="settings-section">
+          <h3>Local Backup &amp; Reset</h3>
+          <div class="btn-group">
+            <button id="exportJsonBtn" class="btn btn-secondary" type="button">Download Backup</button>
+            <button id="importJsonBtn" class="btn btn-secondary" type="button">Restore Backup</button>
+            <input id="importJsonFile" type="file" accept="application/json,.json" class="hidden">
+          </div>
+          <div class="btn-group" style="margin-top: 10px;">
+            <button id="resetDefaultsBtn" class="btn btn-danger" type="button">Reset to Default Layout</button>
+          </div>
+        </section>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Shortcut Editor Modal -->
+  <div id="shortcutModalBackdrop" class="modal-backdrop hidden">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="shortcutModalTitle">
+      <div class="modal-header">
+        <h2 id="shortcutModalTitle">Edit Shortcut</h2>
+        <button id="closeShortcutModalBtn" class="icon-btn" type="button" aria-label="Close">&times;</button>
+      </div>
+      <form id="shortcutForm" class="modal-body">
+        <input type="hidden" id="scWidgetId">
+        <input type="hidden" id="scItemId">
+
+        <div class="form-row">
+          <label for="scTitle">Title</label>
+          <input id="scTitle" type="text" required placeholder="e.g. Khan Academy">
+        </div>
+        <div class="form-row">
+          <label for="scUrl">Website URL</label>
+          <input id="scUrl" type="text" required placeholder="https://example.com">
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label for="scColSpan">Width (Columns)</label>
+            <select id="scColSpan">
+              <option value="1">1x (Standard)</option>
+              <option value="2">2x (Wide)</option>
+              <option value="3">3x (Extra Wide)</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label for="scRowSpan">Height (Rows)</label>
+            <select id="scRowSpan">
+              <option value="1">1x (Standard)</option>
+              <option value="2">2x (Tall)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label for="scIconType">Icon Source</label>
+          <select id="scIconType">
+            <option value="auto">Auto Favicon (from website)</option>
+            <option value="url">Custom Image URL</option>
+            <option value="upload">Upload Image File</option>
+            <option value="monogram">Colored Letter / Monogram</option>
+          </select>
+        </div>
+
+        <div id="scAutoGroup" class="form-row">
+          <div class="upload-preview">
+            <img id="scAutoPreview" class="hidden" alt="Icon preview">
+            <button id="scAutoTryBtn" class="btn btn-secondary" type="button">Try another icon</button>
+          </div>
+          <span id="scAutoInfo" class="field-hint"></span>
+        </div>
+
+        <div id="scIconUrlGroup" class="form-row hidden">
+          <label for="scIconUrl">Image URL</label>
+          <input id="scIconUrl" type="url" placeholder="https://.../icon.png">
+        </div>
+
+        <div id="scIconUploadGroup" class="form-row hidden">
+          <label for="scIconUpload">Upload Icon (auto-resized for fast sync)</label>
+          <input id="scIconUpload" type="file" accept="image/*">
+          <div id="scUploadPreviewWrap" class="upload-preview hidden">
+            <img id="scUploadPreview" alt="Uploaded icon preview">
+            <span id="scUploadInfo"></span>
+          </div>
+        </div>
+
+        <div id="scMonogramGroup" class="form-grid-2 hidden">
+          <div class="form-row">
+            <label for="scMonogramText">Text (1-3 chars)</label>
+            <input id="scMonogramText" type="text" maxlength="4" placeholder="A">
+          </div>
+          <div class="form-row">
+            <label for="scTextColor">Text Color</label>
+            <input id="scTextColor" type="color" value="#ffffff">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-row">
+            <label for="scBgColor">Tile Background Color</label>
+            <input id="scBgColor" type="color" value="#f3f4f6">
+          </div>
+          <div class="form-row">
+            <label for="scIconFit">Image Fit</label>
+            <select id="scIconFit">
+              <option value="contain">Fill the tile (whole image)</option>
+              <option value="padded">Padded (logo with a border)</option>
+              <option value="cover">Zoom to fill (may crop)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="deleteShortcutBtn" class="btn btn-danger hidden" type="button">Delete</button>
+          <div class="spacer"></div>
+          <button id="cancelShortcutBtn" class="btn btn-secondary" type="button">Cancel</button>
+          <button class="btn btn-primary" type="submit">Save Shortcut</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Widget Settings Modal -->
+  <div id="widgetModalBackdrop" class="modal-backdrop hidden">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="widgetModalTitle">
+      <div class="modal-header">
+        <h2 id="widgetModalTitle">Widget Settings</h2>
+        <button id="closeWidgetModalBtn" class="icon-btn" type="button" aria-label="Close">&times;</button>
+      </div>
+      <form id="widgetForm" class="modal-body">
+        <input type="hidden" id="wgId">
+
+        <div class="form-row">
+          <label for="wgTitle">Widget Title</label>
+          <input id="wgTitle" type="text" placeholder="e.g. Daily Tools">
+        </div>
+
+        <div class="form-row">
+          <label for="wgPageSpan">Widget Width (Page Columns)</label>
+          <select id="wgPageSpan">
+            <option value="1">1 Column</option>
+            <option value="2">2 Columns</option>
+            <option value="3">3 Columns</option>
+            <option value="4">Full Width</option>
+          </select>
+        </div>
+
+        <div id="wgShortcutFields">
+          <div class="form-grid-2">
+            <div class="form-row">
+              <label for="wgColumns">Icons Per Row (Columns)</label>
+              <input id="wgColumns" type="number" min="1" max="12" value="5">
+            </div>
+            <div class="form-row">
+              <label for="wgIconSize">Icon Size Override (px, 0 = default)</label>
+              <input id="wgIconSize" type="number" min="0" max="180" step="4" value="0">
+            </div>
+          </div>
+        </div>
+
+        <div id="wgNoteFields" class="hidden">
+          <div class="form-grid-2">
+            <div class="form-row">
+              <label for="wgNoteColor">Note Background Color</label>
+              <input id="wgNoteColor" type="color" value="#fce878">
+            </div>
+            <div class="form-row">
+              <label for="wgNoteHeight">Min Height (px)</label>
+              <input id="wgNoteHeight" type="number" min="80" max="800" step="20" value="140">
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="deleteWidgetBtn" class="btn btn-danger" type="button">Delete Widget</button>
+          <div class="spacer"></div>
+          <button id="cancelWidgetBtn" class="btn btn-secondary" type="button">Cancel</button>
+          <button class="btn btn-primary" type="submit">Save Widget</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

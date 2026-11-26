@@ -1,0 +1,4 @@
+{
+  "version": "2.3.0",
+  "notes": "Icons now fill the whole tile with rounded corners instead of sitting inside a colored box. Choose Padded under Image Fit if a logo needs a border."
+}
